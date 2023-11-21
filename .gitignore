@@ -1,0 +1,46 @@
+# macOS system files
+.DS_Store
+
+# Python virtual environment files (if using virtual environments)
+venv/
+__pycache__/
+
+# Compiled Python files
+*.pyc
+*.pyo
+__pycache__/
+
+# Logs and databases
+*.log
+*.sql
+
+# Ignore environment-related files
+.env
+
+# Ignore VSCode settings and workspace files
+.vscode/
+
+# Ignore any built or compiled files
+dist/
+build/
+*.egg-info/
+*.egg/
+__pycache__/
+*.pyc
+
+# Ignore user-specific settings files
+settings.json
+settings.vscode.json
+
+# Ignore macOS application files
+*.app/
+*.dmg
+*.pkg
+
+# Ignore generated GUI resource files (if any)
+# Modify this section as needed depending on your project structure
+# Example: For a "resources" directory containing generated files, use:
+# /resources/*.py
+
+# Ignore IDE-specific files (for other IDEs, if applicable)
+# For PyCharm, you might want to add `.idea/` to the list.
