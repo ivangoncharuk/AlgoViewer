@@ -23,6 +23,8 @@ class MainWindow(ctk.CTk):
         self.setup_sidebar()
         self.setup_main_frame()
 
+        self.is_visualizing = False  # Track the state of visualization
+
     def setup_sidebar(self):
         """
         Set up the sidebar containing controls and widgets.
@@ -30,33 +32,6 @@ class MainWindow(ctk.CTk):
         self.sidebar = ctk.CTkFrame(self, width=200, corner_radius=0)
         self.sidebar.pack(side="left", fill="y", padx=10, pady=10)
         self.setup_controls()
-
-    def setup_controls(self):
-        """
-        Set up the GUI controls in the sidebar.
-        """
-
-        # Start button
-        self.start_button = ctk.CTkButton(
-            self.sidebar, text="Start", command=self.start_visualization
-        )
-        self.start_button.pack(pady=10)
-
-        # Dropdown menu for algorithm selection
-        self.algorithm_label = ctk.CTkLabel(self.sidebar, text="Select Algorithm")
-        self.algorithm_label.pack(pady=(10, 0))
-        self.algorithm_combo = ctk.CTkComboBox(
-            self.sidebar,
-            values=["Bubble Sort", "Quick Sort"],
-        )
-        self.algorithm_combo.pack(pady=10)
-
-        # Slider for speed control
-        self.speed_label = ctk.CTkLabel(self.sidebar, text="Visualization Speed")
-        self.speed_label.pack(pady=(10, 0))
-
-        self.speed_slider = ctk.CTkSlider(self.sidebar, from_=1, to=10)
-        self.speed_slider.pack(pady=10)
 
     def setup_main_frame(self):
         """
@@ -69,6 +44,50 @@ class MainWindow(ctk.CTk):
         self.animation_canvas = AnimationCanvas(self.main_frame, width=600, height=400)
         self.animation_canvas.pack(pady=10)
 
+    def setup_controls(self):
+        """
+        Set up the GUI controls in the sidebar.
+        """
+
+        # Play/Pause button
+        self.play_pause_button = ctk.CTkButton(
+            self.sidebar, text="Play", command=self.toggle_visualization
+        )
+        self.play_pause_button.pack(pady=10)
+
+        # Clear button
+        self.clear_button = ctk.CTkButton(
+            self.sidebar, text="Clear", command=self.clear_canvas
+        )
+        self.clear_button.pack(pady=10)
+
+        # Dropdown menu for algorithm selection
+        self.algorithm_combo = ctk.CTkComboBox(
+            self.sidebar,
+            values=["Bubble Sort", "Quick Sort"],
+        )
+        self.algorithm_combo.pack(pady=10)
+        self.algorithm_combo.bind("<<ComboboxSelected>>", self.on_algorithm_change)
+
+        # Slider for speed control
+        self.speed_label = ctk.CTkLabel(self.sidebar, text="Visualization Speed")
+        self.speed_label.pack(pady=(10, 0))
+
+        self.speed_slider = ctk.CTkSlider(self.sidebar, from_=1, to=10)
+        self.speed_slider.pack(pady=10)
+
+    def on_algorithm_change(self, event=None):
+        self.clear_canvas()
+
+    def toggle_visualization(self):
+        if self.is_visualizing:
+            self.stop_visualization = True
+            self.play_pause_button.configure(text="Play")
+        else:
+            self.start_visualization()
+            self.play_pause_button.configure(text="Pause")
+        self.is_visualizing = not self.is_visualizing
+
     def start_visualization(self):
         """
         Start the visualization process when the "Start" button is clicked.
@@ -78,6 +97,14 @@ class MainWindow(ctk.CTk):
             target=self.run_visualization, daemon=True
         )
         self.visualization_thread.start()
+
+    def clear_canvas(self):
+        if self.is_visualizing:
+            self.stop_visualization = True
+            self.visualization_thread.join()
+            self.is_visualizing = False
+            self.play_pause_button.configure(text="Play")
+        self.animation_canvas.clear_canvas()
 
     def ensure_single_thread(self):
         """
