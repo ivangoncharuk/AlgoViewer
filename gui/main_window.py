@@ -50,49 +50,45 @@ class MainWindow(ctk.CTk):
     def setup_main_frame(self):
         self.main_frame = ctk.CTkFrame(self)
         self.main_frame.pack(side="right", fill="both", expand=True, padx=10, pady=10)
-        # Placeholder for animation canvas
-
-    def start_visualization(self):
-        if (
-            hasattr(self, "visualization_thread")
-            and self.visualization_thread.is_alive()
-        ):
-            self.stop_visualization = True  # Signal to stop the current visualization
-            self.visualization_thread.join()  # Wait for the thread to finish
-
-        self.stop_visualization = False  # Reset the flag
-        self.visualization_thread = threading.Thread(
-            target=self.run_sorting_visualization, daemon=True
-        )
-        self.visualization_thread.start()
-
-    def run_sorting_visualization(self):
-        selected_algorithm = self.algorithm_combo.get()
-        speed = self.speed_slider.get()
-
-        if selected_algorithm == "Bubble Sort":
-            data = [random.randint(1, 100) for _ in range(50)]
-            max_value = max(data)
-
-            self.animation_canvas.create_initial_bars(
-                data, max_value
-            )  # Create initial bars
-
-            for step in sorting_algorithms.bubble_sort(data):
-                if self.stop_visualization:
-                    break  # Stop updating if the flag is set
-
-                self.animation_canvas.update_bars(step, max_value)
-                self.update_idletasks()
-                time.sleep(0.25 / speed)
-
-    def setup_main_frame(self):
-        self.main_frame = ctk.CTkFrame(self)
-        self.main_frame.pack(side="right", fill="both", expand=True, padx=10, pady=10)
 
         # Initialize and pack the animation canvas
         self.animation_canvas = AnimationCanvas(self.main_frame, width=600, height=400)
         self.animation_canvas.pack(pady=10)
+
+    def start_visualization(self):
+        self.ensure_single_thread()
+        self.visualization_thread = threading.Thread(
+            target=self.run_visualization, daemon=True
+        )
+        self.visualization_thread.start()
+
+    def ensure_single_thread(self):
+        if (
+            hasattr(self, "visualization_thread")
+            and self.visualization_thread.is_alive()
+        ):
+            self.stop_visualization = True
+            self.visualization_thread.join()
+        self.stop_visualization = False
+
+    def run_visualization(self):
+        algorithm = self.algorithm_combo.get()
+        speed = self.speed_slider.get()
+
+        if algorithm == "Bubble Sort":
+            self.visualize_bubble_sort(speed)
+
+    def visualize_bubble_sort(self, speed):
+        data = [random.randint(1, 100) for _ in range(50)]
+        max_value = max(data)
+        self.animation_canvas.create_initial_bars(data, max_value)
+
+        for step in sorting_algorithms.bubble_sort(data):
+            if self.stop_visualization:
+                break
+            self.animation_canvas.update_bars(step, max_value)
+            self.update_idletasks()
+            time.sleep(0.25 / speed)
 
 
 if __name__ == "__main__":
