@@ -53,21 +53,38 @@ class MainWindow(ctk.CTk):
         # Placeholder for animation canvas
 
     def start_visualization(self):
-        threading.Thread(target=self.run_sorting_visualization, daemon=True).start()
+        if (
+            hasattr(self, "visualization_thread")
+            and self.visualization_thread.is_alive()
+        ):
+            self.stop_visualization = True  # Signal to stop the current visualization
+            self.visualization_thread.join()  # Wait for the thread to finish
+
+        self.stop_visualization = False  # Reset the flag
+        self.visualization_thread = threading.Thread(
+            target=self.run_sorting_visualization, daemon=True
+        )
+        self.visualization_thread.start()
 
     def run_sorting_visualization(self):
         selected_algorithm = self.algorithm_combo.get()
         speed = self.speed_slider.get()
-        print(f"Starting {selected_algorithm} visualization at speed {speed}")
 
         if selected_algorithm == "Bubble Sort":
             data = [random.randint(1, 100) for _ in range(50)]
+            max_value = max(data)
+
+            self.animation_canvas.create_initial_bars(
+                data, max_value
+            )  # Create initial bars
+
             for step in sorting_algorithms.bubble_sort(data):
-                self.animation_canvas.visualize_sorting(
-                    step
-                )  # 'step' is the entire list
+                if self.stop_visualization:
+                    break  # Stop updating if the flag is set
+
+                self.animation_canvas.update_bars(step, max_value)
                 self.update_idletasks()
-                time.sleep(0.5 / speed)
+                time.sleep(0.25 / speed)
 
     def setup_main_frame(self):
         self.main_frame = ctk.CTkFrame(self)
