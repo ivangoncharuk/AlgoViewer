@@ -1,5 +1,7 @@
 import customtkinter as ctk
 
+from animation_canvas import AnimationCanvas
+
 
 class MainWindow(ctk.CTk):
     def __init__(self):
@@ -25,16 +27,16 @@ class MainWindow(ctk.CTk):
         # Dropdown menu for algorithm selection
         self.algorithm_label = ctk.CTkLabel(self.sidebar, text="Select Algorithm")
         self.algorithm_label.pack(pady=(10, 0))
-        self.algorithm_combo = ctk.CTkComboBox(
+        self.algorithm_combobox = ctk.CTkComboBox(
             self.sidebar,
             values=["Bubble Sort", "Quick Sort"],
         )
-        self.algorithm_combo.pack(pady=10)
+        self.algorithm_combobox.pack(pady=10)
 
         # Slider for speed control
         self.speed_label = ctk.CTkLabel(self.sidebar, text="Visualization Speed")
         self.speed_label.pack(pady=(10, 0))
-        
+
         self.speed_slider = ctk.CTkSlider(self.sidebar, from_=1, to=10)
         self.speed_slider.pack(pady=10)
 
@@ -44,9 +46,17 @@ class MainWindow(ctk.CTk):
         # Placeholder for animation canvas
 
     def start_visualization(self):
-        selected_algorithm = self.algorithm_combo.get()
+        selected_algorithm = self.algorithm_combobox.get()
         speed = self.speed_slider.get()
         print(f"Starting {selected_algorithm} visualization at speed {speed}")
+
+    def setup_main_frame(self):
+        self.main_frame = ctk.CTkFrame(self)
+        self.main_frame.pack(side="right", fill="both", expand=True, padx=10, pady=10)
+
+        # Initialize and pack the animation canvas
+        self.animation_canvas = AnimationCanvas(self.main_frame, width=600, height=400)
+        self.animation_canvas.pack(pady=10)
 
 
 if __name__ == "__main__":
