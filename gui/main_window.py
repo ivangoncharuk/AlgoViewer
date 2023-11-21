@@ -1,6 +1,13 @@
+import random
+import sys
+import threading
+import time
 import customtkinter as ctk
 
-from animation_canvas import AnimationCanvas
+sys.path.append(".")
+
+from algorithms import sorting_algorithms
+from gui.animation_canvas import AnimationCanvas
 
 
 class MainWindow(ctk.CTk):
@@ -27,11 +34,11 @@ class MainWindow(ctk.CTk):
         # Dropdown menu for algorithm selection
         self.algorithm_label = ctk.CTkLabel(self.sidebar, text="Select Algorithm")
         self.algorithm_label.pack(pady=(10, 0))
-        self.algorithm_combobox = ctk.CTkComboBox(
+        self.algorithm_combo = ctk.CTkComboBox(
             self.sidebar,
             values=["Bubble Sort", "Quick Sort"],
         )
-        self.algorithm_combobox.pack(pady=10)
+        self.algorithm_combo.pack(pady=10)
 
         # Slider for speed control
         self.speed_label = ctk.CTkLabel(self.sidebar, text="Visualization Speed")
@@ -46,9 +53,21 @@ class MainWindow(ctk.CTk):
         # Placeholder for animation canvas
 
     def start_visualization(self):
-        selected_algorithm = self.algorithm_combobox.get()
+        threading.Thread(target=self.run_sorting_visualization, daemon=True).start()
+
+    def run_sorting_visualization(self):
+        selected_algorithm = self.algorithm_combo.get()
         speed = self.speed_slider.get()
         print(f"Starting {selected_algorithm} visualization at speed {speed}")
+
+        if selected_algorithm == "Bubble Sort":
+            data = [random.randint(1, 100) for _ in range(50)]
+            for step in sorting_algorithms.bubble_sort(data):
+                self.animation_canvas.visualize_sorting(
+                    step
+                )  # 'step' is the entire list
+                self.update_idletasks()
+                time.sleep(0.5 / speed)
 
     def setup_main_frame(self):
         self.main_frame = ctk.CTkFrame(self)
