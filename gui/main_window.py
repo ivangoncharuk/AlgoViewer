@@ -11,6 +11,10 @@ from gui.animation_canvas import AnimationCanvas
 
 
 class MainWindow(ctk.CTk):
+    """
+    Main window class for the Algorithm Visualizer application.
+    """
+
     def __init__(self):
         super().__init__()
         self.title("Algorithm Visualizer")
@@ -20,11 +24,18 @@ class MainWindow(ctk.CTk):
         self.setup_main_frame()
 
     def setup_sidebar(self):
+        """
+        Set up the sidebar containing controls and widgets.
+        """
         self.sidebar = ctk.CTkFrame(self, width=200, corner_radius=0)
         self.sidebar.pack(side="left", fill="y", padx=10, pady=10)
         self.setup_controls()
 
     def setup_controls(self):
+        """
+        Set up the GUI controls in the sidebar.
+        """
+
         # Start button
         self.start_button = ctk.CTkButton(
             self.sidebar, text="Start", command=self.start_visualization
@@ -48,6 +59,9 @@ class MainWindow(ctk.CTk):
         self.speed_slider.pack(pady=10)
 
     def setup_main_frame(self):
+        """
+        Set up the main frame for the animation canvas.
+        """
         self.main_frame = ctk.CTkFrame(self)
         self.main_frame.pack(side="right", fill="both", expand=True, padx=10, pady=10)
 
@@ -56,6 +70,9 @@ class MainWindow(ctk.CTk):
         self.animation_canvas.pack(pady=10)
 
     def start_visualization(self):
+        """
+        Start the visualization process when the "Start" button is clicked.
+        """
         self.ensure_single_thread()
         self.visualization_thread = threading.Thread(
             target=self.run_visualization, daemon=True
@@ -63,6 +80,9 @@ class MainWindow(ctk.CTk):
         self.visualization_thread.start()
 
     def ensure_single_thread(self):
+        """
+        Ensure that only one visualization thread is active at a time.
+        """
         if (
             hasattr(self, "visualization_thread")
             and self.visualization_thread.is_alive()
@@ -72,6 +92,9 @@ class MainWindow(ctk.CTk):
         self.stop_visualization = False
 
     def run_visualization(self):
+        """
+        Run the selected algorithm visualization based on user input.
+        """
         algorithm = self.algorithm_combo.get()
         speed = self.speed_slider.get()
 
@@ -79,6 +102,12 @@ class MainWindow(ctk.CTk):
             self.visualize_bubble_sort(speed)
 
     def visualize_bubble_sort(self, speed):
+        """
+        Visualize the Bubble Sort algorithm.
+
+        Args:
+            speed (int): The visualization speed control value.
+        """
         data = [random.randint(1, 100) for _ in range(50)]
         max_value = max(data)
         self.animation_canvas.create_initial_bars(data, max_value)
