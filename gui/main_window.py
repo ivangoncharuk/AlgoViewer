@@ -38,6 +38,64 @@ class MainWindow(ctk.CTk):
         self.sidebar.pack(side="left", fill="y", padx=10, pady=10)
         self.setup_controls()
 
+    def setup_controls(self):
+        self.setup_play_pause_button()
+        self.setup_reset_button()
+        self.setup_clear_canvas_button()
+        self.setup_load_random_data_button()
+        self.setup_algorithm_combo()
+        self.setup_num_bars_slider()
+        self.setup_speed_slider()
+
+    def setup_play_pause_button(self):
+        self.play_pause_button = ctk.CTkButton(
+            self.sidebar, text="Play", command=self.toggle_visualization
+        )
+        self.play_pause_button.pack(pady=10)
+
+    def setup_reset_button(self):
+        self.reset_button = ctk.CTkButton(
+            self.sidebar, text="Reset", command=self.reset_visualization
+        )
+        self.reset_button.pack(pady=10)
+
+    def setup_clear_canvas_button(self):
+        self.clear_canvas_button = ctk.CTkButton(
+            self.sidebar, text="Clear Canvas", command=self.clear_only_canvas
+        )
+        self.clear_canvas_button.pack(pady=10)
+
+    def setup_load_random_data_button(self):
+        self.load_random_data_button = ctk.CTkButton(
+            self.sidebar, text="Load Random Data", command=self.randomize_canvas
+        )
+        self.load_random_data_button.pack(pady=10)
+
+    def setup_algorithm_combo(self):
+        self.algorithm_combo = ctk.CTkComboBox(
+            self.sidebar, values=["Bubble Sort", "Quick Sort"]
+        )
+        self.algorithm_combo.pack(pady=10)
+        self.algorithm_combo.bind("<<ComboboxSelected>>", self.on_algorithm_change)
+
+    def setup_num_bars_slider(self):
+        self.num_bars_label = ctk.CTkLabel(self.sidebar, text="Number of Bars: 50")
+        self.num_bars_label.pack(pady=(10, 0))
+        self.number_of_bars_slider = ctk.CTkSlider(
+            self.sidebar, from_=10, to=100, command=self.update_num_bars_label
+        )
+        self.number_of_bars_slider.set(50)
+        self.number_of_bars_slider.pack(pady=10)
+
+    def setup_speed_slider(self):
+        self.speed_label = ctk.CTkLabel(self.sidebar, text="Visualization Speed: 1")
+        self.speed_label.pack(pady=(10, 0))
+        self.speed_slider = ctk.CTkSlider(
+            self.sidebar, from_=1, to=10, command=self.update_speed_label
+        )
+        self.speed_slider.set(1)
+        self.speed_slider.pack(pady=10)
+
     def setup_main_frame(self):
         """
         Set up the main frame for the animation canvas.
@@ -48,62 +106,6 @@ class MainWindow(ctk.CTk):
         # Initialize and pack the animation canvas
         self.animation_canvas = AnimationCanvas(self.main_frame, width=750, height=400)
         self.animation_canvas.pack(pady=10)
-
-    def setup_controls(self):
-        """
-        Set up the GUI controls in the sidebar.
-        """
-
-        # Play/Pause button
-        self.play_pause_button = ctk.CTkButton(
-            self.sidebar, text="Play", command=self.toggle_visualization
-        )
-        self.play_pause_button.pack(pady=10)
-
-        # Reset button
-        self.reset_button = ctk.CTkButton(
-            self.sidebar, text="Reset", command=self.reset_visualization
-        )
-        self.reset_button.pack(pady=10)
-
-        # New Clear button
-        self.clear_canvas_button = ctk.CTkButton(
-            self.sidebar, text="Clear Canvas", command=self.clear_only_canvas
-        )
-        self.clear_canvas_button.pack(pady=10)
-
-        # Load Random Data button
-        self.load_random_data_button = ctk.CTkButton(
-            self.sidebar, text="Load Random Data", command=self.randomize_canvas
-        )
-        self.load_random_data_button.pack(pady=10)
-
-        # Dropdown menu for algorithm selection
-        self.algorithm_combo = ctk.CTkComboBox(
-            self.sidebar,
-            values=["Bubble Sort", "Quick Sort"],
-        )
-        self.algorithm_combo.pack(pady=10)
-        self.algorithm_combo.bind("<<ComboboxSelected>>", self.on_algorithm_change)
-
-        # Label and Slider for number of bars
-        self.num_bars_label = ctk.CTkLabel(self.sidebar, text="Number of Bars: 50")
-        self.num_bars_label.pack(pady=(10, 0))
-        self.number_of_bars_slider = ctk.CTkSlider(
-            self.sidebar, from_=10, to=100, command=self.update_num_bars_label
-        )
-        self.number_of_bars_slider.set(50)  # Default value
-        self.number_of_bars_slider.pack(pady=10)
-        self.number_of_bars = 50
-
-        # Label and Slider for speed control
-        self.speed_label = ctk.CTkLabel(self.sidebar, text="Visualization Speed: 1")
-        self.speed_label.pack(pady=(10, 0))
-        self.speed_slider = ctk.CTkSlider(
-            self.sidebar, from_=1, to=10, command=self.update_speed_label
-        )
-        self.speed_slider.set(1)  # Default value
-        self.speed_slider.pack(pady=10)
 
     def update_num_bars_label(self, value):
         self.num_bars_label.configure(text=f"Number of Bars: {int(value)}")
@@ -156,36 +158,36 @@ class MainWindow(ctk.CTk):
         )
         self.visualization_thread.start()
 
+    def update_canvas(self, data):
+        self.current_data = data
+        self.sorting_index = 0
+        max_value = max(self.current_data)
+        self.animation_canvas.create_initial_bars(self.current_data, max_value)
+
+    def stop_visualization_and_reset(self):
+        self.stop_visualization = True
+        self.visualization_thread.join()
+        self.is_visualizing = False
+        self.play_pause_button.configure(text="Play")
+
     def reset_visualization(self):
         if self.is_visualizing:
-            # Safely stop visualization before resetting
-            self.stop_visualization = True
-            self.visualization_thread.join()
-            self.is_visualizing = False
-            self.play_pause_button.configure(text="Play")
+            self.stop_visualization_and_reset()
 
-        # Reset current data and sorting index
-        self.current_data = self.initial_data[:]  # Reset to initial data
-        self.sorting_index = 0  # Reset sorting index to initial state
-
-        self.display_initial_bars()
-        self.enable_controls(True)  # Re-enable controls after reset
+        # Reset to initial data using update_canvas
+        self.update_canvas(self.initial_data[:])
 
     def randomize_canvas(self):
         self.number_of_bars = int(self.number_of_bars_slider.get())
+
         if self.is_visualizing:
-            self.stop_visualization = True
-            self.visualization_thread.join()
-            self.is_visualizing = False
-            self.play_pause_button.configure(text="Play")
+            self.stop_visualization_and_reset()
 
         # Generate a new random dataset based on the number of bars
-        self.initial_data = [random.randint(1, 100) for _ in range(self.number_of_bars)]
-        self.current_data = self.initial_data[:]  # Update current data to new dataset
-        self.sorting_index = 0  # Reset the sorting index
+        new_data = [random.randint(1, 100) for _ in range(self.number_of_bars)]
 
-        # Prepare the canvas with the new dataset
-        self.display_initial_bars()
+        # Use the update_canvas method to update the canvas
+        self.update_canvas(new_data)
 
     def clear_only_canvas(self):
         self.animation_canvas.clear_canvas()
