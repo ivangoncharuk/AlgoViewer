@@ -23,6 +23,10 @@ class MainWindow(ctk.CTk):
         self.setup_sidebar()
         self.setup_main_frame()
 
+        self.initial_data = [random.randint(1, 100) for _ in range(100)]  # Initial data
+        self.current_data = self.initial_data[:]  # Current state of data
+        self.display_initial_bars()
+
         self.is_visualizing = False  # Track the state of visualization
 
     def setup_sidebar(self):
@@ -41,7 +45,7 @@ class MainWindow(ctk.CTk):
         self.main_frame.pack(side="right", fill="both", expand=True, padx=10, pady=10)
 
         # Initialize and pack the animation canvas
-        self.animation_canvas = AnimationCanvas(self.main_frame, width=600, height=400)
+        self.animation_canvas = AnimationCanvas(self.main_frame, width=750, height=400)
         self.animation_canvas.pack(pady=10)
 
     def setup_controls(self):
@@ -54,6 +58,12 @@ class MainWindow(ctk.CTk):
             self.sidebar, text="Play", command=self.toggle_visualization
         )
         self.play_pause_button.pack(pady=10)
+
+        # Reset button
+        self.reset_button = ctk.CTkButton(
+            self.sidebar, text="Reset", command=self.reset_visualization
+        )
+        self.reset_button.pack(pady=10)
 
         # Clear button
         self.clear_button = ctk.CTkButton(
@@ -79,14 +89,29 @@ class MainWindow(ctk.CTk):
     def on_algorithm_change(self, event=None):
         self.clear_canvas()
 
+    def display_initial_bars(self):
+        max_value = max(self.current_data)
+        self.animation_canvas.create_initial_bars(self.current_data, max_value)
+
     def toggle_visualization(self):
         if self.is_visualizing:
             self.stop_visualization = True
             self.play_pause_button.configure(text="Play")
+            self.current_data = self.animation_canvas.get_current_data()
+            self.enable_controls(True)  # Enable controls after pausing
         else:
             self.start_visualization()
             self.play_pause_button.configure(text="Pause")
+            self.enable_controls(False)  # Disable controls during visualization
         self.is_visualizing = not self.is_visualizing
+
+    def enable_controls(self, enable):
+        """
+        Enable or disable control buttons.
+        """
+        self.reset_button.configure(state=ctk.NORMAL if enable else ctk.DISABLED)
+        self.clear_button.configure(state=ctk.NORMAL if enable else ctk.DISABLED)
+        self.algorithm_combo.configure(state=ctk.NORMAL if enable else ctk.DISABLED)
 
     def start_visualization(self):
         """
@@ -97,6 +122,18 @@ class MainWindow(ctk.CTk):
             target=self.run_visualization, daemon=True
         )
         self.visualization_thread.start()
+
+    def reset_visualization(self):
+        if self.is_visualizing:
+            # Safely stop visualization before resetting
+            self.stop_visualization = True
+            self.visualization_thread.join()
+            self.is_visualizing = False
+            self.play_pause_button.configure(text="Play")
+
+        self.current_data = self.initial_data[:]  # Reset to initial data
+        self.display_initial_bars()
+        self.enable_controls(True)  # Re-enable controls after reset
 
     def clear_canvas(self):
         if self.is_visualizing:
@@ -125,6 +162,10 @@ class MainWindow(ctk.CTk):
         algorithm = self.algorithm_combo.get()
         speed = self.speed_slider.get()
 
+        self.animation_canvas.set_current_data(
+            self.current_data
+        )  # Set data before starting
+
         if algorithm == "Bubble Sort":
             self.visualize_bubble_sort(speed)
 
@@ -135,7 +176,7 @@ class MainWindow(ctk.CTk):
         Args:
             speed (int): The visualization speed control value.
         """
-        data = [random.randint(1, 100) for _ in range(50)]
+        data = self.current_data  # Use the current data instead of generating new data
         max_value = max(data)
         self.animation_canvas.create_initial_bars(data, max_value)
 

@@ -18,6 +18,12 @@ class AnimationCanvas(ctk.CTkCanvas):
         self.config(bg="white")
         self.rectangles = []
 
+    def set_current_data(self, data):
+        self.current_data = data
+
+    def get_current_data(self):
+        return self.current_data
+
     def create_initial_bars(self, data, max_value):
         """
         Create initial bars on the canvas based on input data.
