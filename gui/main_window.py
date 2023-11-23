@@ -66,11 +66,28 @@ class MainWindow(ctk.CTk):
         )
         self.reset_button.pack(pady=10)
 
-        # Clear button
+        # Randomize button
         self.clear_button = ctk.CTkButton(
-            self.sidebar, text="Clear", command=self.clear_canvas
+            self.sidebar, text="Randomize", command=self.randomize_canvas
         )
         self.clear_button.pack(pady=10)
+
+        # New Clear button
+        self.clear_canvas_button = ctk.CTkButton(
+            self.sidebar, text="Clear Canvas", command=self.clear_only_canvas
+        )
+        self.clear_canvas_button.pack(pady=10)
+
+        # Load Random Data button
+        self.load_random_data_button = ctk.CTkButton(
+            self.sidebar, text="Load Random Data", command=self.randomize_canvas
+        )
+        self.load_random_data_button.pack(pady=10)
+
+        # Slider for number of bars
+        self.number_of_bars_slider = ctk.CTkSlider(self.sidebar, from_=10, to=100)
+        self.number_of_bars_slider.pack(pady=10)
+        self.number_of_bars = 50  # Default value
 
         # Dropdown menu for algorithm selection
         self.algorithm_combo = ctk.CTkComboBox(
@@ -88,7 +105,7 @@ class MainWindow(ctk.CTk):
         self.speed_slider.pack(pady=10)
 
     def on_algorithm_change(self, event=None):
-        self.clear_canvas()
+        self.randomize_canvas()
 
     def display_initial_bars(self):
         max_value = max(self.current_data)
@@ -143,12 +160,23 @@ class MainWindow(ctk.CTk):
         self.display_initial_bars()
         self.enable_controls(True)  # Re-enable controls after reset
 
-    def clear_canvas(self):
+    def randomize_canvas(self):
+        self.number_of_bars = int(self.number_of_bars_slider.get())
         if self.is_visualizing:
             self.stop_visualization = True
             self.visualization_thread.join()
             self.is_visualizing = False
             self.play_pause_button.configure(text="Play")
+
+        # Generate a new random dataset based on the number of bars
+        self.initial_data = [random.randint(1, 100) for _ in range(self.number_of_bars)]
+        self.current_data = self.initial_data[:]  # Update current data to new dataset
+        self.sorting_index = 0  # Reset the sorting index
+
+        # Prepare the canvas with the new dataset
+        self.display_initial_bars()
+
+    def clear_only_canvas(self):
         self.animation_canvas.clear_canvas()
 
     def ensure_single_thread(self):
@@ -188,7 +216,9 @@ class MainWindow(ctk.CTk):
         max_value = max(data)
         self.animation_canvas.create_initial_bars(data, max_value)
 
-        for step, comparison_indices, i in sorting_algorithms.bubble_sort(data, self.sorting_index):
+        for step, comparison_indices, i in sorting_algorithms.bubble_sort(
+            data, self.sorting_index
+        ):
             if self.stop_visualization:
                 self.sorting_index = i  # Save the current sorting index
                 break
