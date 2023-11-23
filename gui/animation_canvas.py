@@ -1,3 +1,4 @@
+import time
 import customtkinter as ctk
 
 
@@ -18,11 +19,12 @@ class AnimationCanvas(ctk.CTkCanvas):
         self.config(bg="white")
         self.rectangles = []
 
-    def set_current_data(self, data):
+    def set_current_data(self, data, sorting_index=0):
         self.current_data = data
+        self.sorting_index = sorting_index
 
     def get_current_data(self):
-        return self.current_data
+        return self.current_data, None, self.sorting_index
 
     def create_initial_bars(self, data, max_value):
         """
@@ -64,22 +66,35 @@ class AnimationCanvas(ctk.CTkCanvas):
             rectangles.append(rect)
         return rectangles
 
-    def update_bars(self, data, max_value):
+    def update_bars(self, data, comparison_indices, max_value):
         """
-        Update the positions of existing bar rectangles on the canvas based on new data.
+        Update the positions of existing bar rectangles on the canvas based on new data,
+        and highlight the bars that are being compared or swapped.
 
         Args:
             data (list): List of data values to update the bars.
+            comparison_indices (tuple): Indices of bars being compared or swapped.
             max_value (int): Maximum value in the data for scaling.
         """
         c_width, c_height = self.winfo_width(), self.winfo_height()
         for i, val in enumerate(data):
+            color = "green" if i in comparison_indices else "blue"
+            self.itemconfig(self.rectangles[i], fill=color)
             self.coords(
                 self.rectangles[i],
                 *self.calculate_bar_dimensions(
                     i, val, len(data), c_width, c_height, max_value
                 )
             )
+
+    def color_bars_complete(self):
+        """
+        Color all bars green to indicate that sorting is complete.
+        """
+        for rect in self.rectangles:
+            self.itemconfig(rect, fill="green")
+            self.update_idletasks()  # Update the canvas
+            time.sleep(0.25 / 100)
 
     def calculate_bar_dimensions(
         self, index, value, data_length, canvas_width, canvas_height, max_value

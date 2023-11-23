@@ -23,10 +23,11 @@ class MainWindow(ctk.CTk):
         self.setup_sidebar()
         self.setup_main_frame()
 
-        self.initial_data = [random.randint(1, 100) for _ in range(100)]  # Initial data
+        self.initial_data = [random.randint(1, 100) for _ in range(50)]  # Initial data
         self.current_data = self.initial_data[:]  # Current state of data
         self.display_initial_bars()
 
+        self.sorting_index = 0  # Initialize sorting index
         self.is_visualizing = False  # Track the state of visualization
 
     def setup_sidebar(self):
@@ -97,7 +98,11 @@ class MainWindow(ctk.CTk):
         if self.is_visualizing:
             self.stop_visualization = True
             self.play_pause_button.configure(text="Play")
-            self.current_data = self.animation_canvas.get_current_data()
+            (
+                self.current_data,
+                _,
+                self.sorting_index,
+            ) = self.animation_canvas.get_current_data()
             self.enable_controls(True)  # Enable controls after pausing
         else:
             self.start_visualization()
@@ -131,7 +136,10 @@ class MainWindow(ctk.CTk):
             self.is_visualizing = False
             self.play_pause_button.configure(text="Play")
 
+        # Reset current data and sorting index
         self.current_data = self.initial_data[:]  # Reset to initial data
+        self.sorting_index = 0  # Reset sorting index to initial state
+
         self.display_initial_bars()
         self.enable_controls(True)  # Re-enable controls after reset
 
@@ -176,17 +184,25 @@ class MainWindow(ctk.CTk):
         Args:
             speed (int): The visualization speed control value.
         """
-        data = self.current_data  # Use the current data instead of generating new data
+        data = self.current_data
         max_value = max(data)
         self.animation_canvas.create_initial_bars(data, max_value)
 
-        for step in sorting_algorithms.bubble_sort(data):
+        for step, comparison_indices, i in sorting_algorithms.bubble_sort(data, self.sorting_index):
             if self.stop_visualization:
+                self.sorting_index = i  # Save the current sorting index
                 break
-            self.animation_canvas.update_bars(step, max_value)
+            self.animation_canvas.update_bars(step, comparison_indices, max_value)
             self.update_idletasks()
-            time.sleep(0.25 / speed)
+            time.sleep(0.002 / speed)
 
+        if not self.stop_visualization:
+            self.animation_canvas.color_bars_complete()
+            self.enable_controls(True)
+            self.play_pause_button.configure(text="Play")
+
+
+# for step, comparison_indices, i in sorting_algorithms.bubble_sort(self.current_data, self.sorting_index):
 
 if __name__ == "__main__":
     app = MainWindow()
