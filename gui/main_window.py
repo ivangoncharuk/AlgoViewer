@@ -66,12 +66,6 @@ class MainWindow(ctk.CTk):
         )
         self.reset_button.pack(pady=10)
 
-        # Randomize button
-        self.clear_button = ctk.CTkButton(
-            self.sidebar, text="Randomize", command=self.randomize_canvas
-        )
-        self.clear_button.pack(pady=10)
-
         # New Clear button
         self.clear_canvas_button = ctk.CTkButton(
             self.sidebar, text="Clear Canvas", command=self.clear_only_canvas
@@ -84,11 +78,6 @@ class MainWindow(ctk.CTk):
         )
         self.load_random_data_button.pack(pady=10)
 
-        # Slider for number of bars
-        self.number_of_bars_slider = ctk.CTkSlider(self.sidebar, from_=10, to=100)
-        self.number_of_bars_slider.pack(pady=10)
-        self.number_of_bars = 50  # Default value
-
         # Dropdown menu for algorithm selection
         self.algorithm_combo = ctk.CTkComboBox(
             self.sidebar,
@@ -97,12 +86,31 @@ class MainWindow(ctk.CTk):
         self.algorithm_combo.pack(pady=10)
         self.algorithm_combo.bind("<<ComboboxSelected>>", self.on_algorithm_change)
 
-        # Slider for speed control
-        self.speed_label = ctk.CTkLabel(self.sidebar, text="Visualization Speed")
-        self.speed_label.pack(pady=(10, 0))
+        # Label and Slider for number of bars
+        self.num_bars_label = ctk.CTkLabel(self.sidebar, text="Number of Bars: 50")
+        self.num_bars_label.pack(pady=(10, 0))
+        self.number_of_bars_slider = ctk.CTkSlider(
+            self.sidebar, from_=10, to=100, command=self.update_num_bars_label
+        )
+        self.number_of_bars_slider.set(50)  # Default value
+        self.number_of_bars_slider.pack(pady=10)
+        self.number_of_bars = 50
 
-        self.speed_slider = ctk.CTkSlider(self.sidebar, from_=1, to=10)
+        # Label and Slider for speed control
+        self.speed_label = ctk.CTkLabel(self.sidebar, text="Visualization Speed: 1")
+        self.speed_label.pack(pady=(10, 0))
+        self.speed_slider = ctk.CTkSlider(
+            self.sidebar, from_=1, to=10, command=self.update_speed_label
+        )
+        self.speed_slider.set(1)  # Default value
         self.speed_slider.pack(pady=10)
+
+    def update_num_bars_label(self, value):
+        self.num_bars_label.configure(text=f"Number of Bars: {int(value)}")
+        self.number_of_bars = int(value)
+
+    def update_speed_label(self, value):
+        self.speed_label.configure(text=f"Visualization Speed: {int(value)}")
 
     def on_algorithm_change(self, event=None):
         self.randomize_canvas()
@@ -132,8 +140,11 @@ class MainWindow(ctk.CTk):
         Enable or disable control buttons.
         """
         self.reset_button.configure(state=ctk.NORMAL if enable else ctk.DISABLED)
-        self.clear_button.configure(state=ctk.NORMAL if enable else ctk.DISABLED)
+        self.load_random_data_button.configure(
+            state=ctk.NORMAL if enable else ctk.DISABLED
+        )
         self.algorithm_combo.configure(state=ctk.NORMAL if enable else ctk.DISABLED)
+        self.clear_canvas_button.configure(state=ctk.NORMAL if enable else ctk.DISABLED)
 
     def start_visualization(self):
         """
