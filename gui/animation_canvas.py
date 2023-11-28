@@ -66,7 +66,7 @@ class AnimationCanvas(ctk.CTkCanvas):
             rectangles.append(rect)
         return rectangles
 
-    def update_bars(self, data, comparison_indices, max_value):
+    def update_bars(self, data, comparison_indices, max_value, additional_info=None):
         """
         Update the positions of existing bar rectangles on the canvas based on new data,
         and highlight the bars that are being compared or swapped.
@@ -75,10 +75,13 @@ class AnimationCanvas(ctk.CTkCanvas):
             data (list): List of data values to update the bars.
             comparison_indices (tuple): Indices of bars being compared or swapped.
             max_value (int): Maximum value in the data for scaling.
+            additional_info (dict or int): Additional information (like pivot index).
         """
         c_width, c_height = self.winfo_width(), self.winfo_height()
         for i, val in enumerate(data):
             color = "green" if i in comparison_indices else "blue"
+            if additional_info is not None and i == additional_info:
+                color = "red"  # Highlight the pivot element in red
             self.itemconfig(self.rectangles[i], fill=color)
             self.coords(
                 self.rectangles[i],

@@ -178,6 +178,8 @@ class MainWindow(ctk.CTk):
 
         if algorithm == "Bubble Sort":
             self.visualize_bubble_sort(speed)
+        elif algorithm == "Quick Sort":
+            self.visualize_quick_sort(speed)
 
     def visualize_bubble_sort(self, speed):
         """
@@ -205,6 +207,41 @@ class MainWindow(ctk.CTk):
             if self.stop_visualization:
                 break
             self.animation_canvas.update_bars(step, comparison_indices, max_value)
+            self.update_idletasks()
+            time.sleep(0.5 / speed)
+            self.update_counters(self.comparisons, self.swaps)
+
+        if not self.stop_visualization:
+            self.animation_canvas.color_bars_complete()
+            sidebar_controls.enable_controls(self, True)
+            self.play_pause_button.configure(text="Play")
+            self.sorting_completed = True
+            self.is_visualizing = False
+        else:
+            self.play_pause_button.configure(text="Play")
+            self.is_visualizing = False
+
+    def visualize_quick_sort(self, speed):
+        data = self.current_data
+        max_value = max(data)
+        self.animation_canvas.create_initial_bars(data, max_value)
+
+        for (
+            step,
+            comparison_indices,
+            pivot_index,
+            self.comparisons,
+            self.swaps,
+        ) in sorting_algorithms.quick_sort(
+            data,
+            comparisons=self.comparisons,
+            swaps=self.swaps,
+        ):
+            if self.stop_visualization:
+                break
+            self.animation_canvas.update_bars(
+                step, comparison_indices, max_value, pivot_index
+            )
             self.update_idletasks()
             time.sleep(0.5 / speed)
             self.update_counters(self.comparisons, self.swaps)
