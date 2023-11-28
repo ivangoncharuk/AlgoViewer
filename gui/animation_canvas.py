@@ -66,22 +66,22 @@ class AnimationCanvas(ctk.CTkCanvas):
             rectangles.append(rect)
         return rectangles
 
-    def update_bars(self, data, comparison_indices, max_value, additional_info=None):
-        """
-        Update the positions of existing bar rectangles on the canvas based on new data,
-        and highlight the bars that are being compared or swapped.
-
-        Args:
-            data (list): List of data values to update the bars.
-            comparison_indices (tuple): Indices of bars being compared or swapped.
-            max_value (int): Maximum value in the data for scaling.
-            additional_info (dict or int): Additional information (like pivot index).
-        """
+    def update_bars(
+        self, data, comparison_indices, max_value, additional_info=None, action=None
+    ):
         c_width, c_height = self.winfo_width(), self.winfo_height()
         for i, val in enumerate(data):
-            color = "green" if i in comparison_indices else "blue"
-            if additional_info is not None and i == additional_info:
-                color = "red"  # Highlight the pivot element in red
+            color = "blue"  # Default color for unsorted bars
+
+            if action == "pivot_selection" and i == additional_info:
+                color = "green"  # Color for pivot
+            elif action == "compare" and i in comparison_indices:
+                color = "red"  # Color for comparison
+            elif action == "swap" and i in comparison_indices:
+                color = "yellow"  # Color for swap
+            elif action == "sorted":
+                color = "orange"  # Color for sorted segments
+
             self.itemconfig(self.rectangles[i], fill=color)
             self.coords(
                 self.rectangles[i],
@@ -97,7 +97,7 @@ class AnimationCanvas(ctk.CTkCanvas):
         for rect in self.rectangles:
             self.itemconfig(rect, fill="green")
             self.update_idletasks()  # Update the canvas
-            time.sleep(0.25 / 100)
+            time.sleep(0.7 / 100)
 
     def calculate_bar_dimensions(
         self, index, value, data_length, canvas_width, canvas_height, max_value

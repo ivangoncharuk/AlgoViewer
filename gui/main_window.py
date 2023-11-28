@@ -232,6 +232,7 @@ class MainWindow(ctk.CTk):
             pivot_index,
             self.comparisons,
             self.swaps,
+            action,
         ) in sorting_algorithms.quick_sort(
             data,
             comparisons=self.comparisons,
@@ -240,14 +241,16 @@ class MainWindow(ctk.CTk):
             if self.stop_visualization:
                 break
             self.animation_canvas.update_bars(
-                step, comparison_indices, max_value, pivot_index
+                step, comparison_indices, max_value, pivot_index, action
             )
             self.update_idletasks()
             time.sleep(0.5 / speed)
             self.update_counters(self.comparisons, self.swaps)
 
         if not self.stop_visualization:
+            # Color all bars green to indicate that sorting is complete
             self.animation_canvas.color_bars_complete()
+            # self.animation_canvas.update_bars(data, None, max_value, None, "sorted")
             sidebar_controls.enable_controls(self, True)
             self.play_pause_button.configure(text="Play")
             self.sorting_completed = True

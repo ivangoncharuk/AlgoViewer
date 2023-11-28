@@ -20,6 +20,9 @@ def quick_sort(data, low=0, high=None, comparisons=0, swaps=0):
             data, low, high, comparisons, swaps
         )
 
+        # Highlight pivot selection
+        yield data, None, high, comparisons, swaps, "pivot_selection"
+
         for step in partition_steps:
             yield step
 
@@ -37,14 +40,22 @@ def partition(data, low, high, comparisons, swaps):
 
     for j in range(low, high):
         comparisons += 1
+        steps.append(
+            (data[:], (j, high), high, comparisons, swaps, "compare")
+        )  # Compare action
         if data[j] < pivot:
             i += 1
             data[i], data[j] = data[j], data[i]
             swaps += 1
-            steps.append((data[:], (i, j), high, comparisons, swaps))
+            steps.append(
+                (data[:], (i, j), high, comparisons, swaps, "swap")
+            )  # Swap action
 
     data[i + 1], data[high] = data[high], data[i + 1]
     swaps += 1
+    steps.append(
+        (data[:], (i + 1, high), high, comparisons, swaps, "swap")
+    )  # Final swap for pivot
     pivot_index = i + 1
 
     return pivot_index, comparisons, swaps, steps
