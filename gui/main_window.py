@@ -36,6 +36,8 @@ class MainWindow(ctk.CTk):
         self.sorting_index = 0  # Initialize sorting index
         self.is_visualizing = False  # Track the state of visualization
         self.sorting_completed = False  # Tracking the state of sortedness
+        self.comparisons = 0  # Initialize comparison counter
+        self.swaps = 0  # Initialize swap counter
 
     def setup_sidebar(self):
         """
@@ -53,6 +55,17 @@ class MainWindow(ctk.CTk):
         sidebar_controls.setup_algorithm_combo(self)
         sidebar_controls.setup_num_bars_slider(self)
         sidebar_controls.setup_speed_slider(self)
+        self.setup_counter_labels()
+
+    def setup_counter_labels(self):
+        self.comparisons_label = ctk.CTkLabel(self.sidebar, text="Comparisons: 0")
+        self.comparisons_label.pack(pady=10)
+        self.swaps_label = ctk.CTkLabel(self.sidebar, text="Swaps: 0")
+        self.swaps_label.pack(pady=10)
+
+    def update_counters(self, comparisons, swaps):
+        self.comparisons_label.configure(text=f"Comparisons: {comparisons}")
+        self.swaps_label.configure(text=f"Swaps: {swaps}")
 
     def setup_main_frame(self):
         """
@@ -98,7 +111,6 @@ class MainWindow(ctk.CTk):
             sidebar_controls.enable_controls(self, False)
         self.is_visualizing = not self.is_visualizing
 
-
     def start_visualization(self):
         """
         Start the visualization process when the "Start" button is clicked.
@@ -132,6 +144,11 @@ class MainWindow(ctk.CTk):
 
         # Use the update_canvas method to update the canvas
         self.update_canvas(new_data)
+
+        # Reset counters back to zero
+        self.comparisons = 0
+        self.swaps = 0
+        self.update_counters(self.comparisons, self.swaps)
 
     def clear_only_canvas(self):
         self.animation_canvas.clear_canvas()
@@ -173,15 +190,24 @@ class MainWindow(ctk.CTk):
         max_value = max(data)
         self.animation_canvas.create_initial_bars(data, max_value)
 
-        for step, comparison_indices, i in sorting_algorithms.bubble_sort(
-            data, self.sorting_index
+        for (
+            step,
+            comparison_indices,
+            self.sorting_index,
+            self.comparisons,
+            self.swaps,
+        ) in sorting_algorithms.bubble_sort(
+            data,
+            start=self.sorting_index,
+            comparisons=self.comparisons,
+            swaps=self.swaps,
         ):
             if self.stop_visualization:
-                self.sorting_index = i  # Save the current sorting index
                 break
             self.animation_canvas.update_bars(step, comparison_indices, max_value)
             self.update_idletasks()
             time.sleep(0.5 / speed)
+            self.update_counters(self.comparisons, self.swaps)
 
         if not self.stop_visualization:
             self.animation_canvas.color_bars_complete()
@@ -192,7 +218,6 @@ class MainWindow(ctk.CTk):
         else:
             self.play_pause_button.configure(text="Play")
             self.is_visualizing = False
-
 
 
 if __name__ == "__main__":

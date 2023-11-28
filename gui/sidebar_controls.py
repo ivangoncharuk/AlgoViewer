@@ -18,13 +18,6 @@ def setup_play_pause_button(obj):
     obj.play_pause_button.pack(pady=10)
 
 
-# def setup_reset_button(obj):
-#     obj.reset_button = ctk.CTkButton(
-#         obj.sidebar, text="Reset", command=obj.reset_visualization
-#     )
-#     obj.reset_button.pack(pady=10)
-
-
 def setup_clear_canvas_button(obj):
     obj.clear_canvas_button = ctk.CTkButton(
         obj.sidebar, text="Clear Canvas", command=obj.clear_only_canvas
@@ -58,10 +51,13 @@ def setup_num_bars_slider(obj):
 
 
 def setup_speed_slider(obj):
-    obj.speed_label = ctk.CTkLabel(obj.sidebar, text="Visualization Speed: 1")
+    initial_value = 50
+    obj.speed_label = ctk.CTkLabel(
+        obj.sidebar, text=f"Visualization Speed: {int(initial_value)}"
+    )
     obj.speed_label.pack(pady=(10, 0))
     obj.speed_slider = ctk.CTkSlider(
         obj.sidebar, from_=1, to=100, command=obj.update_speed_label
     )
-    obj.speed_slider.set(1)
+    obj.speed_slider.set(initial_value)
     obj.speed_slider.pack(pady=10)
