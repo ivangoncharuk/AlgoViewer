@@ -1,13 +1,11 @@
-import random
-import sys
-import threading
-import time
+import random, sys, threading, time
 import customtkinter as ctk
 
 sys.path.append(".")
 
 from algorithms import sorting_algorithms
 from gui.animation_canvas import AnimationCanvas
+import gui.sidebar_controls as sidebar_controls
 
 
 class MainWindow(ctk.CTk):
@@ -15,20 +13,29 @@ class MainWindow(ctk.CTk):
     Main window class for the Algorithm Visualizer application.
     """
 
+    TITLE = "Algorithm Visualizer"
+    WINDOW_SIZE = "1024x768"
+    INITIAL_DATA_RANGE = (1, 100)
+    INITIAL_DATA_COUNT = 50
+
     def __init__(self):
         super().__init__()
-        self.title("Algorithm Visualizer")
-        self.geometry("1024x768")
+        self.title(self.TITLE)
+        self.geometry(self.WINDOW_SIZE)
 
         self.setup_sidebar()
         self.setup_main_frame()
 
-        self.initial_data = [random.randint(1, 100) for _ in range(50)]  # Initial data
+        self.initial_data = [
+            random.randint(*self.INITIAL_DATA_RANGE)
+            for _ in range(self.INITIAL_DATA_COUNT)
+        ]
         self.current_data = self.initial_data[:]  # Current state of data
         self.display_initial_bars()
 
         self.sorting_index = 0  # Initialize sorting index
         self.is_visualizing = False  # Track the state of visualization
+        self.sorting_completed = False  # Tracking the state of sortedness
 
     def setup_sidebar(self):
         """
@@ -39,62 +46,13 @@ class MainWindow(ctk.CTk):
         self.setup_controls()
 
     def setup_controls(self):
-        self.setup_play_pause_button()
-        self.setup_reset_button()
-        self.setup_clear_canvas_button()
-        self.setup_load_random_data_button()
-        self.setup_algorithm_combo()
-        self.setup_num_bars_slider()
-        self.setup_speed_slider()
-
-    def setup_play_pause_button(self):
-        self.play_pause_button = ctk.CTkButton(
-            self.sidebar, text="Play", command=self.toggle_visualization
-        )
-        self.play_pause_button.pack(pady=10)
-
-    def setup_reset_button(self):
-        self.reset_button = ctk.CTkButton(
-            self.sidebar, text="Reset", command=self.reset_visualization
-        )
-        self.reset_button.pack(pady=10)
-
-    def setup_clear_canvas_button(self):
-        self.clear_canvas_button = ctk.CTkButton(
-            self.sidebar, text="Clear Canvas", command=self.clear_only_canvas
-        )
-        self.clear_canvas_button.pack(pady=10)
-
-    def setup_load_random_data_button(self):
-        self.load_random_data_button = ctk.CTkButton(
-            self.sidebar, text="Load Random Data", command=self.randomize_canvas
-        )
-        self.load_random_data_button.pack(pady=10)
-
-    def setup_algorithm_combo(self):
-        self.algorithm_combo = ctk.CTkComboBox(
-            self.sidebar, values=["Bubble Sort", "Quick Sort"]
-        )
-        self.algorithm_combo.pack(pady=10)
-        self.algorithm_combo.bind("<<ComboboxSelected>>", self.on_algorithm_change)
-
-    def setup_num_bars_slider(self):
-        self.num_bars_label = ctk.CTkLabel(self.sidebar, text="Number of Bars: 50")
-        self.num_bars_label.pack(pady=(10, 0))
-        self.number_of_bars_slider = ctk.CTkSlider(
-            self.sidebar, from_=10, to=100, command=self.update_num_bars_label
-        )
-        self.number_of_bars_slider.set(50)
-        self.number_of_bars_slider.pack(pady=10)
-
-    def setup_speed_slider(self):
-        self.speed_label = ctk.CTkLabel(self.sidebar, text="Visualization Speed: 1")
-        self.speed_label.pack(pady=(10, 0))
-        self.speed_slider = ctk.CTkSlider(
-            self.sidebar, from_=1, to=10, command=self.update_speed_label
-        )
-        self.speed_slider.set(1)
-        self.speed_slider.pack(pady=10)
+        sidebar_controls.setup_play_pause_button(self)
+        # sidebar_controls.setup_reset_button(self)
+        sidebar_controls.setup_clear_canvas_button(self)
+        sidebar_controls.setup_load_random_data_button(self)
+        sidebar_controls.setup_algorithm_combo(self)
+        sidebar_controls.setup_num_bars_slider(self)
+        sidebar_controls.setup_speed_slider(self)
 
     def setup_main_frame(self):
         """
@@ -130,23 +88,16 @@ class MainWindow(ctk.CTk):
                 _,
                 self.sorting_index,
             ) = self.animation_canvas.get_current_data()
-            self.enable_controls(True)  # Enable controls after pausing
+            sidebar_controls.enable_controls(self, True)
         else:
+            if self.sorting_completed:
+                self.randomize_canvas()  # Reset to new random data
+                self.sorting_completed = False
             self.start_visualization()
             self.play_pause_button.configure(text="Pause")
-            self.enable_controls(False)  # Disable controls during visualization
+            sidebar_controls.enable_controls(self, False)
         self.is_visualizing = not self.is_visualizing
 
-    def enable_controls(self, enable):
-        """
-        Enable or disable control buttons.
-        """
-        self.reset_button.configure(state=ctk.NORMAL if enable else ctk.DISABLED)
-        self.load_random_data_button.configure(
-            state=ctk.NORMAL if enable else ctk.DISABLED
-        )
-        self.algorithm_combo.configure(state=ctk.NORMAL if enable else ctk.DISABLED)
-        self.clear_canvas_button.configure(state=ctk.NORMAL if enable else ctk.DISABLED)
 
     def start_visualization(self):
         """
@@ -169,13 +120,6 @@ class MainWindow(ctk.CTk):
         self.visualization_thread.join()
         self.is_visualizing = False
         self.play_pause_button.configure(text="Play")
-
-    def reset_visualization(self):
-        if self.is_visualizing:
-            self.stop_visualization_and_reset()
-
-        # Reset to initial data using update_canvas
-        self.update_canvas(self.initial_data[:])
 
     def randomize_canvas(self):
         self.number_of_bars = int(self.number_of_bars_slider.get())
@@ -237,15 +181,19 @@ class MainWindow(ctk.CTk):
                 break
             self.animation_canvas.update_bars(step, comparison_indices, max_value)
             self.update_idletasks()
-            time.sleep(0.002 / speed)
+            time.sleep(0.5 / speed)
 
         if not self.stop_visualization:
             self.animation_canvas.color_bars_complete()
-            self.enable_controls(True)
+            sidebar_controls.enable_controls(self, True)
             self.play_pause_button.configure(text="Play")
+            self.sorting_completed = True
+            self.is_visualizing = False
+        else:
+            self.play_pause_button.configure(text="Play")
+            self.is_visualizing = False
 
 
-# for step, comparison_indices, i in sorting_algorithms.bubble_sort(self.current_data, self.sorting_index):
 
 if __name__ == "__main__":
     app = MainWindow()
