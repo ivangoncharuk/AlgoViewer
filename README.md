@@ -6,9 +6,11 @@ The Algorithm Visualizer is a Python application designed to visualize sorting a
 
 ## Video Demo
 
-<video src="/videos/visualizer_demo.mov" controls>
-  Your browser does not support the video tag.
-</video>
+
+
+https://github.com/ivangoncharuk/AlgoViewer/assets/85744041/37e0f18a-cd1f-4aef-8391-32732cee2867
+
+
 
 ## Getting Started
 
