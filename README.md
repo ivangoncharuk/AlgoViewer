@@ -1,4 +1,4 @@
-# README for Algorithm Visualizer Project
+# Algorithm Visualizer Project
 
 ## Introduction
 
@@ -6,11 +6,7 @@ The Algorithm Visualizer is a Python application designed to visualize sorting a
 
 ## Video Demo
 
-
-
 https://github.com/ivangoncharuk/AlgoViewer/assets/85744041/37e0f18a-cd1f-4aef-8391-32732cee2867
-
-
 
 ## Getting Started
 
@@ -21,7 +17,44 @@ https://github.com/ivangoncharuk/AlgoViewer/assets/85744041/37e0f18a-cd1f-4aef-8
 ### Installation
 
 1. Clone the repository to your local machine.
+
+```bash
+git clone https://github.com/ivangoncharuk/AlgoViewer.git
+```
+
 2. Navigate to the project directory.
+
+```bash
+cd AlgoViewer/
+```
+
+#### Dependencies
+Make a virtual python environment:
+
+```bash
+python -m venv myenv
+```
+
+Activate the virtual environment:
+
+##### Windows virtual environment activation
+
+In cmd.exe:
+```bash
+myenv\Scripts\activate.bat
+```
+
+In PowerShell:
+```bash
+myenv\Scripts\Activate.ps1
+```
+
+##### Linux and MacOS virtual environment activation
+
+On Linux and MacOS, activate your virtual environment with the source command.
+```bash
+source myvenv/bin/activate
+```
 
 ### Running the Application
 
@@ -51,8 +84,8 @@ The application is built using the `customtkinter` library for the GUI and is st
 This project serves as a useful educational tool for understanding and visualizing sorting algorithms. 
 Future enhancements will include:
 - adding more algorithms
-- improving the GUI
-- refactoring components into their own classes
+- improvements to the GUI
+- major refactoring
 - adding pathfinding algorithms
 - including sounds
 - better animations
